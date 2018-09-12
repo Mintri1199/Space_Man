@@ -32,12 +32,12 @@ class SpaceMan:
                          "       ###   ",
                          "       ###   "
                          ]
-        self.categories = ["STATES", "COUNTRIES"]
-        self.game_word = []  # reference list of characters
-        self.secret_word = []  # List contains the amount of characters as the reference list but with underscores
+        self.game_word = []     # reference list of characters
+        self.secret_word = []   # List contains underscores
         self.wrong_guesses = 0  # Wrong guesses counter
-        self.user_word = ""  # It'll be what the user sees instead of a list of character
-        self.guess_list = []  # Record the unique letters that the user guessed
+        self.user_word = ""     # It'll be what the user sees instead of a list of character
+        self.guess = ""
+        self.guess_list = []    # Record the unique letters that the user guessed
 
     # Draw function for wrong guesses
     def draw(self):
@@ -55,109 +55,110 @@ class SpaceMan:
             for i in self.fire_art:
                 print(i)
 
-    # Generate random word from the library and create a list with the characters
+    # Ask user for category selection
     def word_choice(self):
 
-        f = open("words.json", 'r')
+        f = open("words.json")
         word_list = json.load(f)
 
-        # Show the index and categories' names for the user to choose
-        for index, title in enumerate(word_list):
-            print(index, title)
+        # Show keys parse from a JSON file
+        for key in word_list.keys():
+            print(key)
 
-        choice = input("Please input the number associated with the categories: ")
+        selection = input("Please type the category you want to play: ")
 
-        # Test if the user try to chose a out of index categories or inputted a character that is not a number
+        selection = selection.strip().upper()
+
+        var = random.choice(word_list[selection])
+
+        for character in var.upper():
+            self.game_word.append(character)
+            self.secret_word.append('_')
+
+        for i in self.secret_word:
+            self.user_word += i + " "
+
+    # Function that will handle errors for first function
+    def verify_first_choice(self):
         try:
-            var = random.choice(word_list[self.categories[int(choice)]])
 
-            for character in var.upper():
-                self.game_word.append(character)
-                self.secret_word.append('_')
-
-            for i in self.secret_word:
-                self.user_word += i + " "
-
-            print(self.game_word)
-            print(self.user_word)
-
-        except ValueError:
-            os.system("clear")
-            print("What you input wasn't a number!")
             self.word_choice()
 
-        except IndexError:
-            os.system("clear")
-            print("You tried to select a categories that doesn't exist: ")
-            self.word_choice()
+        except KeyboardInterrupt:
+            print("You try to interrupt the keyboard!")
+            self.verify_first_choice()
+
+        except EOFError:
+            print("You entered a END OF FILE input!")
+            self.verify_first_choice()
+
+        except KeyError:
+            print("You might have misspelled, entered a number, or entered nothing for your input ")
+            self.verify_first_choice()
 
     # Game functions method
     def game_function(self):
 
-        # User input
+        # print(self.game_word)
+        self.draw()
+        print(self.user_word)
+        print("Guess list: ")
+        print(self.guess_list)
+
         guess = input("Guess a letter: ")
+        guess = guess.upper()
 
-        # Check whether the user inputted a alphabetical
         if guess.isalpha() and len(guess) == 1:
+            if guess in self.game_word and guess:
+                if guess not in self.guess_list:
+                    os.system('clear')
+                    self.user_word = ''
+                    self.guess_list.append(guess)
+                    for index, value in enumerate(self.game_word):
+                        if guess == value:
+                            self.secret_word[index] = value
+                    for value in self.secret_word:
+                        self.user_word += value + ' '
 
-            # Check if the guess is correct and if the user guess the same letter
-            if guess.upper() in self.game_word and guess.upper() not in self.guess_list:
-
-                # loop for the indexes and values in the reference list of characters
-                for index, value in enumerate(self.game_word):
-
-                    # Checking if the user's guess is identical to the item in the reference list
-                    # If pass, the item in the secret list will change according to the index
-                    if guess.upper() == value:
-                        self.secret_word[index] = value
-                        self.user_word = ''         # Reset the word
-
-                        # Checking if the correct guess is not in the guess list
-                        if value not in self.guess_list:
-                            self.guess_list.append(value)
-
-                        # Concatenate characters plus spaces
-                        for i in self.secret_word:
-                            self.user_word += i + " "
-
-                        os.system('clear')
-                        self.draw()
-                        print(self.user_word)
-                        print(self.guess_list)
-
-            # Catch if the user's guess the same letter
-            elif guess.upper() in self.guess_list:
-                os.system("clear")
-                self.draw()
-                print(self.user_word)
-                print(self.guess_list)
-                print("You've already guessed this letter")
-
-            # Record and notify the wrong guesses
+                else:
+                    os.system("clear")
+                    print("You've already guess this letter")
             else:
-                os.system('clear')
-                self.guess_list.append(guess.upper())
+                os.system("clear")
+                print("Wrong")
                 self.wrong_guesses += 1
-                self.draw()
-                print(self.user_word)
-                print("You have " + str(self.wrong_guesses) + " wrong guesses")
-                print(self.guess_list)
-
-        # Catch the ill inputs
+                print("You have " + str(self.wrong_guesses) + " wrong guess")
+                self.guess_list.append(guess)
         else:
-            print("You've either inputted nothing, not a alphabetical character, or multiple letters!\n" +
-                  "Please try again")
+            os.system("clear")
+            print("What you entered wasn't a alphabetical letter, not ONE letter, or nothing")
+
+    # Check for ill inputs from user guesses
+    def verify_user_guesses(self):
+        try:
             self.game_function()
+
+        except EOFError:
+            os.system('clear')
+            print("You entered an END OF FILE input")
+            self.verify_user_guesses()
+
+        except KeyboardInterrupt:
+            os.system('clear')
+            print("You try to Interrupt your keyboard")
+            self.verify_user_guesses()
 
     # Run the program
     def run(self):
-        self.word_choice()
+        self.verify_first_choice()
         while "_" in self.secret_word:
-            self.game_function()
+            self.verify_user_guesses()
             if self.wrong_guesses == 7:
+                self.draw()
                 print("You lose")
                 break
         if "_" not in self.secret_word:
+            print(self.user_word)
             print("Congratulation\nYOU WON!")
 
 
