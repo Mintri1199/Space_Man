@@ -1,7 +1,22 @@
-This is a SpaceMan (hangman) project using python
+# Space Man
 
-The player will be given a random word where they can guess what the word is letter by letter.
-The program will also catch for any ill input made by the user and will end the program if the 
-player accumulate 7 wrong guesses.
+This is an assignment for CS 1.1
 
-The program will also draw picture according to the amount of wrong guesses.
+In this project, the user will be playing a game of guess the word from various categories (currently Countries, and States). The player wins when they guessed the word without accumulating 7 wrong guesses.
+
+If the player loses, the program will draw them launching in to space.
+
+## How to play
+
+In your terminal  
+`git clone https://github.com/Mintri1199/Space_Man`
+
+Make sure you got python3 installed
+
+Open your terminal into the project directory
+
+Then input in your terminal
+
+`python3 Space_Man.Py`
+
+Finally follow the instructions and enjoy a game of space man
